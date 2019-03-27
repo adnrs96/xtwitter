@@ -15,10 +15,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from xterver.views import pre_registeration, final_registeration, confirm_registeration
+from xterver.views import (
+    pre_registeration, final_registeration, confirm_registeration,
+    authenticate_and_login, logout_view
+)
 
 urlpatterns = [
     path('accounts/new', pre_registeration),
     path('accounts/confirm', confirm_registeration),
     path('accounts', final_registeration),
+    path('login', authenticate_and_login),
+    path('logout', logout_view),
 ]
