@@ -22,8 +22,8 @@ def do_create_user(full_name: str, email: str, password: str) -> UserProfile:
     username = do_make_unique_user_name(email)
     user_profile = UserProfile(email=UserManager.normalize_email(email),
                                full_name=full_name,
-                               username=username,
-                               password=password)
+                               username=username)
+    user_profile.set_password(password)
     user_profile.save()
     return user_profile
 
