@@ -11,7 +11,7 @@ from xterver.lib.response import json_response
 from xterver.serializers import UserProfileSerializer, UserConfirmationSerializer
 from xterver.actions import (
     do_check_email_in_confirmation, do_create_user, do_register_user_for_confirmation,
-    do_check_email_registered
+    do_check_email_registered, get_user_confirmation
 )
 
 @csrf_exempt
@@ -61,15 +61,19 @@ def final_registeration(request: Request) -> Response:
         except ValidationError:
             return Response(json_response('error', 'Invalid Email'),
                             status=status.HTTP_400_BAD_REQUEST)
-        if do_check_email_in_confirmation(email):
-            return Response(json_response('error', 'Email already in use.'),
+        user_confirmation = get_user_confirmation(email)
+        if not user_confirmation.exists():
+            return Response(json_response('error', 'No such user registered for confirmation.'),
                             status=status.HTTP_400_BAD_REQUEST)
         try:
             validate_password(password)
         except ValidationError as e:
             return Response(json_response('error', e),
                             status=status.HTTP_400_BAD_REQUEST)
-        username_created = do_create_user(email, password)
+        if not user_confirmation.is_confirmed:
+                return Response(json_response('error', 'Email Id Confirmation pending.'),
+                                status=status.HTTP_400_BAD_REQUEST)
+        username_created = do_create_user(user_confirmation.full_name, email, password)
         return Response(json_response('success', 'User Created.',
                         data={'username': username_created}),
                         status=status.HTTP_201_CREATED)
