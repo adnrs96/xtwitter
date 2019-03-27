@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractBaseUser
+from django.contrib.auth.models import AbstractBaseUser, UserManager
 from django.db import models
 
 class UserProfile(AbstractBaseUser):
@@ -7,6 +7,7 @@ class UserProfile(AbstractBaseUser):
     email = models.EmailField(blank=False, unique=True)
     username = models.CharField(max_length=40, unique=True)
     full_name = models.CharField(max_length=MAX_NAME_LENGTH)
+    objects = UserManager()
 
 class UserConfirmation(models.Model):
     full_name = models.CharField(blank=False, max_length=UserProfile.MAX_NAME_LENGTH)

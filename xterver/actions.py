@@ -18,14 +18,14 @@ def do_check_email_registered(email: str) -> bool:
 def do_check_email_in_confirmation(email: str) -> bool:
     return UserConfirmation.objects.filter(email=email).exists()
 
-def do_create_user(full_name: str, email: str, password: str) -> str:
+def do_create_user(full_name: str, email: str, password: str) -> UserProfile:
     username = do_make_unique_user_name(email)
     user_profile = UserProfile(email=UserManager.normalize_email(email),
                                full_name=full_name,
                                username=username,
                                password=password)
     user_profile.save()
-    return username
+    return user_profile
 
 def make_confirmation_key(size: int=6,
                           chars: List[str]=string.ascii_uppercase + string.digits) -> str:
@@ -41,4 +41,7 @@ def do_register_user_for_confirmation(email: str, full_name: str) -> str:
     return confirmation_key
 
 def get_user_confirmation(email: str) -> UserConfirmation:
-    return UserConfirmation.objects.get(email=email)
+    return UserConfirmation.objects.filter(email=email).first()
+
+def get_user_by_email(email: str) -> UserProfile:
+    return UserProfile.objects.filter(email=email).first()

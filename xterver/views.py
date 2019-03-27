@@ -1,5 +1,6 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth import authenticate, login
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -11,7 +12,7 @@ from xterver.lib.response import json_response
 from xterver.serializers import UserProfileSerializer, UserConfirmationSerializer
 from xterver.actions import (
     do_check_email_in_confirmation, do_create_user, do_register_user_for_confirmation,
-    do_check_email_registered, get_user_confirmation
+    do_check_email_registered, get_user_confirmation, get_user_by_email
 )
 
 @csrf_exempt
@@ -95,7 +96,7 @@ def final_registeration(request: Request) -> Response:
             return Response(json_response('error', 'Invalid Email'),
                             status=status.HTTP_400_BAD_REQUEST)
         user_confirmation = get_user_confirmation(email)
-        if not user_confirmation.exists():
+        if user_confirmation is None:
             return Response(json_response('error', 'No such user registered for confirmation.'),
                             status=status.HTTP_400_BAD_REQUEST)
         try:
@@ -106,8 +107,9 @@ def final_registeration(request: Request) -> Response:
         if not user_confirmation.is_confirmed:
                 return Response(json_response('error', 'Email Id Confirmation pending.'),
                                 status=status.HTTP_400_BAD_REQUEST)
-        username_created = do_create_user(user_confirmation.full_name, email, password)
+        user = do_create_user(user_confirmation.full_name, email, password)
+        login(request, user)
         return Response(json_response('success', 'User Created.',
-                        data={'username': username_created}),
+                        data={'username': user.username}),
                         status=status.HTTP_201_CREATED)
         return Response(request.data)
