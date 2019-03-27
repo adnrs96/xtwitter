@@ -8,8 +8,39 @@ from django.shortcuts import render
 from django.core import validators
 from django.core.exceptions import ValidationError
 from xterver.lib.response import json_response
-from xterver.serializers import UserProfileSerializer
-from xterver.actions import do_check_email_used, do_create_user
+from xterver.serializers import UserProfileSerializer, UserConfirmationSerializer
+from xterver.actions import (
+    do_check_email_in_confirmation, do_create_user, do_register_user_for_confirmation,
+    do_check_email_registered
+)
+
+@csrf_exempt
+@api_view(['POST'])
+def pre_registeration(request: Request) -> Response:
+    """
+    Registers a user for email confirmation.
+    """
+    if request.method == "POST":
+        user_confirmation = UserConfirmationSerializer(data=request.data)
+        if not user_confirmation.is_valid():
+            return Response(json_response('error', user_confirmation.errors),
+                            status=status.HTTP_400_BAD_REQUEST)
+        validated_data = user_confirmation.validated_data
+        full_name = validated_data.get('full_name')
+        email = validated_data.get('email')
+        try:
+            validators.validate_email(email)
+        except ValidationError:
+            return Response(json_response('error', 'Invalid Email'),
+                            status=status.HTTP_400_BAD_REQUEST)
+        if do_check_email_registered(email):
+            return Response(json_response('error', 'Email already in use.'),
+                            status=status.HTTP_400_BAD_REQUEST)
+        confirmation_key = do_register_user_for_confirmation(email, full_name)
+        # TODO: Send user a confirmation email
+        return Response(json_response('success',
+                        'User Preregisteration complete. Confirmation Email Sent.'),
+                        status=status.HTTP_200_OK)
 
 @csrf_exempt
 @api_view(['POST'])
@@ -30,7 +61,7 @@ def final_registeration(request: Request) -> Response:
         except ValidationError:
             return Response(json_response('error', 'Invalid Email'),
                             status=status.HTTP_400_BAD_REQUEST)
-        if do_check_email_used(email):
+        if do_check_email_in_confirmation(email):
             return Response(json_response('error', 'Email already in use.'),
                             status=status.HTTP_400_BAD_REQUEST)
         try:

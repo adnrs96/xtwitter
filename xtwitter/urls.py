@@ -15,8 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from xterver.views import final_registeration
+from xterver.views import pre_registeration, final_registeration
 
 urlpatterns = [
+    path('accounts/new', pre_registeration),
     path('accounts', final_registeration),
 ]
