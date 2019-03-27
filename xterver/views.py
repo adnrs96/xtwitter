@@ -16,6 +16,39 @@ from xterver.actions import (
 
 @csrf_exempt
 @api_view(['POST'])
+def confirm_registeration(request: Request) -> Response:
+    """
+    Confirms User email.
+    """
+    if request.method == "POST":
+        email = request.data.get('email', None)
+        key = request.data.get('key', None)
+        if email is None or key is None:
+            return Response(json_response('error', 'Missing Email or Key'),
+                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            validators.validate_email(email)
+        except ValidationError:
+            return Response(json_response('error', 'Invalid Email'),
+                            status=status.HTTP_400_BAD_REQUEST)
+        user_confirmation = get_user_confirmation(email)
+        if not user_confirmation:
+            return Response(json_response('error', 'No Such User Registered for Confirmation.'),
+                            status=status.HTTP_404_NOT_FOUND)
+        if user_confirmation.is_confirmed:
+            return Response(json_response('error', 'Email Already Confirmed.'),
+                            status=status.HTTP_417_EXPECTATION_FAILED)
+        if user_confirmation.confirmation_key != key:
+            return Response(json_response('error', 'Confirmation Key did not match.'),
+                            status=status.HTTP_401_UNAUTHORIZED)
+        user_confirmation.is_confirmed = True
+        user_confirmation.save(update_fields=['is_confirmed'])
+        return Response(json_response('success',
+                        'User Email Confirmed.'),
+                        status=status.HTTP_200_OK)
+
+@csrf_exempt
+@api_view(['POST'])
 def pre_registeration(request: Request) -> Response:
     """
     Registers a user for email confirmation.
