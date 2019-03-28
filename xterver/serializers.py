@@ -4,7 +4,7 @@ from xterver.models import UserProfile, UserConfirmation
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ('email', 'password')
+        fields = ('email', 'password', 'username')
 
 class UserConfirmationSerializer(serializers.ModelSerializer):
     class Meta:

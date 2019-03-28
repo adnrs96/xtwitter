@@ -90,6 +90,7 @@ def final_registeration(request: Request) -> Response:
         validated_data = user_profile_serialized.validated_data
         email = validated_data.get('email')
         password = validated_data.get('password')
+        username = validated_data.get('username')
         try:
             validators.validate_email(email)
         except ValidationError:
@@ -99,6 +100,9 @@ def final_registeration(request: Request) -> Response:
         if user_confirmation is None:
             return Response(json_response('error', 'No such user registered for confirmation.'),
                             status=status.HTTP_400_BAD_REQUEST)
+        if email == username:
+            return Response(json_response('error', 'Username should be different then email.'),
+                            status=status.HTTP_400_BAD_REQUEST)
         try:
             validate_password(password)
         except ValidationError as e:
@@ -107,10 +111,11 @@ def final_registeration(request: Request) -> Response:
         if not user_confirmation.is_confirmed:
                 return Response(json_response('error', 'Email Id Confirmation pending.'),
                                 status=status.HTTP_400_BAD_REQUEST)
-        user = do_create_user(user_confirmation.full_name, email, password)
+        user = do_create_user(user_confirmation.full_name, username, email, password)
         login(request, user)
         return Response(json_response('success', 'User Created.',
-                        data={'username': user.username}),
+                        data={'username': username,
+                              'full_name': user.full_name}),
                         status=status.HTTP_201_CREATED)
         return Response(request.data)
 
