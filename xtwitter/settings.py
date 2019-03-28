@@ -11,16 +11,33 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+import sys
+import configparser
+from typing import Optional, Any
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+secrets_file = configparser.RawConfigParser()
+
+if not secrets_file.read("/etc/xtwitter/xtwitter-secrets.conf"):
+    print('Secrets File Missing. Look at docs and create secrets file.')
+    sys.exit(0)
+
+if not secrets_file.has_section('secrets'):
+    print('Ill formed secrets file. Look at docs and create secrets file correctly.')
+    sys.exit(0)
+
+def get_secret(key: str, default_value: Optional[Any]=None) -> Optional[Any]:
+    if secrets_file.has_option('secrets', key):
+        return secrets_file.get('secrets', key)
+    return default_value
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '1zubl06*v+@1o*7lu78^#v$gfgte(i2i&468_tb9(12-o03myj'
+# Do not share this with strangers :P
+SECRET_KEY = get_secret('secret_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
