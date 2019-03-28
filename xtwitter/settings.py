@@ -39,10 +39,7 @@ def get_secret(key: str, default_value: Optional[Any]=None) -> Optional[Any]:
 # Do not share this with strangers :P
 SECRET_KEY = get_secret('secret_key')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost']
 
 
 # Application definition
@@ -144,3 +141,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+DEVELOPMENT = True
+if DEVELOPMENT:
+    DEBUG = True
