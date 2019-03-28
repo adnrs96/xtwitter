@@ -1,6 +1,7 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate, login, logout
+from django.core.mail import send_mail
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -71,7 +72,13 @@ def pre_registeration(request: Request) -> Response:
             return Response(json_response('error', 'Email already in use.'),
                             status=status.HTTP_400_BAD_REQUEST)
         confirmation_key = do_register_user_for_confirmation(email, full_name)
-        # TODO: Send user a confirmation email
+        send_mail(
+            'Confirmation Email for your new Xtwitter Account',
+            'Your confirmation pin for new Xtwitter account is: ' + str(confirmation_key),
+            'no-reply@mail.xtwitter.com',
+            [email],
+            fail_silently=False,
+        )
         return Response(json_response('success',
                         'User Preregisteration complete. Confirmation Email Sent.'),
                         status=status.HTTP_200_OK)

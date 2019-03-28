@@ -135,6 +135,9 @@ USE_L10N = True
 
 USE_TZ = True
 
+EMAIL_HOST = ''
+EMAIL_PORT = ''
+EMAIL_HOST_USER = ''
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
@@ -144,3 +147,10 @@ STATIC_URL = '/static/'
 DEVELOPMENT = True
 if DEVELOPMENT:
     DEBUG = True
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_HOST_PASSWORD = get_secret('email_password')
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    if not (EMAIL_HOST and EMAIL_PORT and EMAIL_HOST_USER and EMAIL_HOST_PASSWORD):
+        print('Setup Email Configuration Properly.')
+        sys.exit(1)
