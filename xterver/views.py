@@ -1,4 +1,3 @@
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate, login, logout
 from django.core.mail import send_mail
@@ -16,7 +15,6 @@ from xterver.actions import (
     do_check_email_registered, get_user_confirmation, get_user_by_email
 )
 
-@csrf_exempt
 @api_view(['POST'])
 def confirm_registeration(request: Request) -> Response:
     """
@@ -49,7 +47,6 @@ def confirm_registeration(request: Request) -> Response:
                         'User Email Confirmed.'),
                         status=status.HTTP_200_OK)
 
-@csrf_exempt
 @api_view(['POST'])
 def pre_registeration(request: Request) -> Response:
     """
@@ -83,7 +80,6 @@ def pre_registeration(request: Request) -> Response:
                         'User Preregisteration complete. Confirmation Email Sent.'),
                         status=status.HTTP_200_OK)
 
-@csrf_exempt
 @api_view(['POST'])
 def final_registeration(request: Request) -> Response:
     """
@@ -126,7 +122,6 @@ def final_registeration(request: Request) -> Response:
                         status=status.HTTP_201_CREATED)
         return Response(request.data)
 
-# TODO Deal with issues surrounding csrf
 @api_view(['POST'])
 def authenticate_and_login(request):
     potential_user = get_user_by_email(request.data.get('email'))
