@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from xterver.views import (
+from xterver.views.registeration import (
     pre_registeration, final_registeration, confirm_registeration,
     authenticate_and_login, logout_view
 )
