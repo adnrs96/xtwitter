@@ -1,4 +1,4 @@
-from xterver.models import UserProfile, UserConfirmation
+from xterver.models import UserProfile, UserConfirmation, Connection
 from django.contrib.auth.models import UserManager
 from typing import List
 import string
@@ -39,3 +39,15 @@ def get_user_confirmation(email: str) -> UserConfirmation:
 
 def get_user_by_email(email: str) -> UserProfile:
     return UserProfile.objects.filter(email=email).first()
+
+def get_user_by_username(username: str) -> UserProfile:
+    return UserProfile.objects.filter(username=username).first()
+
+def do_check_user_follows_user(follower: UserProfile, following: UserProfile) -> bool:
+    return follower.following.filter(following_userprofile=following).exists()
+
+def do_create_connection(follower: UserProfile, following: UserProfile) -> Connection:
+    connection = Connection(follower_userprofile=follower,
+                             following_userprofile=following)
+    connection.save()
+    return connection

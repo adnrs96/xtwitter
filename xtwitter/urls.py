@@ -19,6 +19,9 @@ from xterver.views.registeration import (
     pre_registeration, final_registeration, confirm_registeration,
     authenticate_and_login, logout_view
 )
+from xterver.views.users import (
+    handle_follow_user
+)
 
 urlpatterns = [
     path('accounts/new', pre_registeration),
@@ -26,4 +29,5 @@ urlpatterns = [
     path('accounts', final_registeration),
     path('login', authenticate_and_login),
     path('logout', logout_view),
+    path('users/<slug:username>/follow', handle_follow_user),
 ]
