@@ -16,3 +16,16 @@ class UserConfirmation(models.Model):
     email = models.EmailField(blank=False, unique=True)
     is_confirmed = models.BooleanField(blank=False, default=False)
     confirmation_key = models.CharField(blank=False, max_length=6)
+
+class Connection(models.Model):
+    follower_userprofile = models.ForeignKey(UserProfile,
+                                             related_name='following',
+                                             blank=False,
+                                             on_delete=models.CASCADE)
+    following_userprofile = models.ForeignKey(UserProfile,
+                                              related_name='followers',
+                                              blank=False,
+                                              on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ("follower_userprofile", "following_userprofile")
