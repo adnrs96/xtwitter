@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.db.models import F
 from django.db.transaction import TransactionManagementError
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
@@ -30,10 +31,8 @@ def handle_follow_user(request: Request, username: str) -> Response:
         try:
             with transaction.atomic():
                 do_create_connection(request.user, user_to_follow_unfollow)
-                request.user.following_count += 1
-                user_to_follow_unfollow.follower_count += 1
-                request.user.save(update_fields=['following_count'])
-                user_to_follow_unfollow.save(update_fields=['follower_count'])
+                request.user.update(following_count=F('following_count') + 1)
+                user_to_follow_unfollow.update(follower_count=F('follower_count') + 1)
         except TransactionManagementError as e:
             return Response(json_response('error'),
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -48,10 +47,8 @@ def handle_follow_user(request: Request, username: str) -> Response:
         try:
             with transaction.atomic():
                 do_remove_connection(request.user, user_to_follow_unfollow)
-                request.user.following_count -= 1
-                user_to_follow_unfollow.follower_count -= 1
-                request.user.save(update_fields=['following_count'])
-                user_to_follow_unfollow.save(update_fields=['follower_count'])
+                request.user.update(following_count=F('following_count') - 1)
+                user_to_follow_unfollow.update(follower_count=F('follower_count') - 1)
         except TransactionManagementError as e:
             return Response(json_response('error'),
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
