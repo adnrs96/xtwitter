@@ -8,11 +8,12 @@ from xterver.lib.response import json_response
 from xterver.lib.response import json_response
 from rest_framework import status
 from xterver.actions import (
-    get_user_by_username, do_check_user_follows_user, do_create_connection
+    get_user_by_username, do_check_user_follows_user, do_create_connection,
+    do_remove_connection
 )
 
 @login_required(login_url='/login')
-@api_view(['PUT'])
+@api_view(['PUT', 'DELETE'])
 def handle_follow_user(request: Request, username: str) -> Response:
     user_to_follow_unfollow = get_user_by_username(username)
     if user_to_follow_unfollow is None:
@@ -39,3 +40,21 @@ def handle_follow_user(request: Request, username: str) -> Response:
         return Response(json_response('success',
                         'User follows ' + username + ' now.'),
                         status=status.HTTP_201_CREATED)
+
+    if request.method == 'DELETE':
+        if not do_check_user_follows_user(request.user, user_to_follow_unfollow):
+            return Response(json_response('error', "User doesn't follow " + username),
+                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            with transaction.atomic():
+                do_remove_connection(request.user, user_to_follow_unfollow)
+                request.user.following_count -= 1
+                user_to_follow_unfollow.follower_count -= 1
+                request.user.save(update_fields=['following_count'])
+                user_to_follow_unfollow.save(update_fields=['follower_count'])
+        except TransactionManagementError as e:
+            return Response(json_response('error'),
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(json_response('success',
+                        "User doesn't follow " + username + ' anymore.'),
+                        status=status.HTTP_200_OK)

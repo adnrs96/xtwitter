@@ -51,3 +51,7 @@ def do_create_connection(follower: UserProfile, following: UserProfile) -> Conne
                              following_userprofile=following)
     connection.save()
     return connection
+
+def do_remove_connection(follower: UserProfile, following: UserProfile):
+    return Connection.objects.filter(follower_userprofile=follower,
+                                     following_userprofile=following).delete()
