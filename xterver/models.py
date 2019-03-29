@@ -7,6 +7,8 @@ class UserProfile(AbstractBaseUser):
     email = models.EmailField(blank=False, unique=True)
     username = models.CharField(max_length=40, unique=True)
     full_name = models.CharField(max_length=MAX_NAME_LENGTH)
+    follower_count = models.PositiveIntegerField(default=0)
+    following_count = models.PositiveIntegerField(default=0)
     objects = UserManager()
 
 class UserConfirmation(models.Model):
