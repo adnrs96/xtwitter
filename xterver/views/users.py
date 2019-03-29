@@ -14,24 +14,25 @@ from xterver.actions import (
 @login_required(login_url='/login')
 @api_view(['PUT'])
 def handle_follow_user(request: Request, username: str) -> Response:
+    user_to_follow_unfollow = get_user_by_username(username)
+    if user_to_follow_unfollow is None:
+        return Response(json_response('error', 'Invalid username.'),
+                        status=status.HTTP_404_NOT_FOUND)
+    if request.user == user_to_follow_unfollow:
+        return Response(json_response('error', 'Operation not allowed on oneself.'),
+                        status=status.HTTP_403_FORBIDDEN)
+
     if request.method == 'PUT':
-        user_to_follow = get_user_by_username(username)
-        if user_to_follow is None:
-            return Response(json_response('error', 'Invalid username.'),
-                            status=status.HTTP_404_NOT_FOUND)
-        if request.user == user_to_follow:
-            return Response(json_response('error', 'Operation not allowed on oneself.'),
-                            status=status.HTTP_403_FORBIDDEN)
-        if do_check_user_follows_user(request.user, user_to_follow):
+        if do_check_user_follows_user(request.user, user_to_follow_unfollow):
             return Response(json_response('error', 'User is already a follower.'),
                             status=status.HTTP_400_BAD_REQUEST)
         try:
             with transaction.atomic():
-                do_create_connection(request.user, user_to_follow)
+                do_create_connection(request.user, user_to_follow_unfollow)
                 request.user.following_count += 1
-                user_to_follow.follower_count += 1
+                user_to_follow_unfollow.follower_count += 1
                 request.user.save(update_fields=['following_count'])
-                user_to_follow.save(update_fields=['follower_count'])
+                user_to_follow_unfollow.save(update_fields=['follower_count'])
         except TransactionManagementError as e:
             return Response(json_response('error'),
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
