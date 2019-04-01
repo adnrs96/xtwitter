@@ -78,7 +78,7 @@ def pre_registeration(request: Request) -> Response:
         )
         return Response(json_response('success',
                         'User Preregisteration complete. Confirmation Email Sent.'),
-                        status=status.HTTP_200_OK)
+                        status=status.HTTP_201_CREATED)
 
 @api_view(['POST'])
 def final_registeration(request: Request) -> Response:
