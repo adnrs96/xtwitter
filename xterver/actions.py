@@ -1,5 +1,8 @@
-from xterver.models import UserProfile, UserConfirmation, Connection
+from xterver.models import (
+    UserProfile, UserConfirmation, Connection, Xtweet, UserXtweet
+)
 from django.contrib.auth.models import UserManager
+from django.db import transaction
 from typing import List
 import string
 import random
@@ -55,3 +58,11 @@ def do_create_connection(follower: UserProfile, following: UserProfile) -> Conne
 def do_remove_connection(follower: UserProfile, following: UserProfile):
     return Connection.objects.filter(follower_userprofile=follower,
                                      following_userprofile=following).delete()
+
+def do_create_xtweet(creator: UserProfile, xtweet_content: str) -> UserXtweet:
+    with transaction.atomic():
+        new_xtweet = Xtweet(creator=creator, content=xtweet_content)
+        new_xtweet.save()
+        new_user_xtweet = UserXtweet(user=creator, xtweet=new_xtweet)
+        new_user_xtweet.save()
+    return new_user_xtweet
