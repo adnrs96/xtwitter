@@ -109,10 +109,10 @@ class RegisterationTest(APITestCase):
 
         def test_failures(data: Dict[str, str],
                           status: int=status.HTTP_400_BAD_REQUEST) -> Response:
-            count_before = UserConfirmation.objects.all().count()
+            count_before = UserProfile.objects.all().count()
             response = self.client.post(url, data, format='json')
             self.assertEqual(response.status_code, status)
-            self.assertEqual(UserConfirmation.objects.all().count(), count_before)
+            self.assertEqual(UserProfile.objects.all().count(), count_before)
             return response
 
         # Test missing password.
