@@ -57,3 +57,35 @@ class UserFollowUnfollowTest(APITestCase):
         # Test you cannot follow whom you already follow.
         response = c.put(url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_user_unfollow(self):
+        """
+        Test we are able to unfollow user.
+        This basically tests the /users/<slug: username>/follow endpoint with a
+        DELETE request.
+        """
+        url = '/users/tereesa/follow'
+        c = Client()
+
+        # Test not logged in requests are redirected to login page.
+        response = c.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
+        self.assertIn(response.url, '/login?next=/users/tereesa/follow')
+
+        c.login(username='adnrs96', password='aditya@123')
+
+        # Test user to follow exits.
+        response = c.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        # Test user unfollow success
+        url = '/users/bakshay/follow'
+        # Test follow success
+        response = c.put(url)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = c.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Test user unfollow whom you don't follow.
+        response = c.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
