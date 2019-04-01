@@ -7,6 +7,18 @@ Next will be a code documentation. Since I am a out of time I am just gonna crea
 
 You can do this with or without a venv but I am gonna try include usage of a venv in the instructions.
 
+* Make sure you have python 3.6 installed.
+* `pip3 install virtualenv`
+* Extract the project zip I sent you and open up a terminal to the project folder location.
+*  `virtualenv xtwitter-venv` This will create a virtual env.
+*  `source xtwitter-venv/bin/activate`
+*  `pip install -r requirements.txt`
+* Migrate the database using `python manage.py migrate`.
+
+To start a web server run `python manage.py runserver`. A web server will start up at `localhost:8000`.
+To run tests once can use `python manage.py test <path to test file from cur location>`.
+
+
 # Code Documentation.
 
 So code is basically a standard Django app with standard places to find things.
