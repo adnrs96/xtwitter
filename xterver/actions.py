@@ -66,3 +66,6 @@ def do_create_xtweet(creator: UserProfile, xtweet_content: str) -> UserXtweet:
         new_user_xtweet = UserXtweet(user=creator, xtweet=new_xtweet)
         new_user_xtweet.save()
     return new_user_xtweet
+
+def get_user_xtweet(id: int) -> UserXtweet:
+    return UserXtweet.objects.filter(id=id).first()

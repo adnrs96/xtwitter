@@ -23,7 +23,7 @@ from xterver.views.users import (
     handle_follow_user
 )
 from xterver.views.xtweets import (
-    handle_xtweet_creation
+    handle_xtweet_creation, handle_xtweet_read
 )
 
 urlpatterns = [
@@ -34,4 +34,5 @@ urlpatterns = [
     path('logout', logout_view),
     path('users/<slug:username>/follow', handle_follow_user),
     path('<slug:username>/xtweets', handle_xtweet_creation),
+    path('<slug:username>/xtweets/<int:xtweet_id>', handle_xtweet_read),
 ]

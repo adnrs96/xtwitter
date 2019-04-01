@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.shortcuts import redirect
 from django.db.transaction import TransactionManagementError
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
@@ -8,8 +9,27 @@ from xterver.lib.response import json_response
 from rest_framework import status
 from xterver.actions import (
     get_user_by_username, do_check_user_follows_user, do_create_connection,
-    do_remove_connection, do_create_xtweet
+    do_remove_connection, do_create_xtweet, get_user_xtweet
 )
+
+@api_view(['GET'])
+def handle_xtweet_read(request: Request, username: str, xtweet_id: int) -> Response:
+    # We can probably in future add support for tweet visibility over here by
+    # performing checks relating to access of xtweets for a particular user.
+    user_xtweet = get_user_xtweet(xtweet_id)
+    if user_xtweet is None:
+        return Response(json_response('error', 'No such Xtweet found.'),
+                        status=status.HTTP_404_NOT_FOUND)
+    if user_xtweet.user.username != username:
+        return redirect('/%s/xtweets/%d' % (user_xtweet.user.username, xtweet_id))
+    return Response(json_response('success',
+                    data={
+                    'msg': '',
+                    'username': username,
+                    'tweet_id': xtweet_id,
+                    'xtweet_content': user_xtweet.xtweet.content,
+                    'xtweet_publish_datatime': user_xtweet.publish_datetime}),
+                    status=status.HTTP_200_OK)
 
 @login_required(login_url='/login')
 @api_view(['POST'])
