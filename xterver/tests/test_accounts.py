@@ -40,3 +40,14 @@ class AccountsTest(APITestCase):
         response = c.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, res_data)
+
+    def test_account_logout(self):
+        """
+        Test that we are able to logout user.
+        It doesn't matter if user was logged in the first place.
+        """
+        url = '/logout'
+        c = Client()
+
+        response = c.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
