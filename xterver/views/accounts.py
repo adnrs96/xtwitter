@@ -8,11 +8,11 @@ from xterver.actions import get_user_by_email
 
 @api_view(['POST'])
 def authenticate_and_login(request):
-    potential_user = get_user_by_email(request.data.get('email'))
+    potential_user = get_user_by_email(request.data.get('email', ''))
     if potential_user is None:
         return Response(json_response('error', 'Invalid Email or Password.'),
                         status=status.HTTP_400_BAD_REQUEST)
-    authenticated = potential_user.check_password(request.data.get('password'))
+    authenticated = potential_user.check_password(request.data.get('password', ''))
     if authenticated:
         login(request, potential_user)
         return Response(json_response('success', 'Logged In'),
