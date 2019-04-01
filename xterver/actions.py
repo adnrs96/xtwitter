@@ -69,3 +69,6 @@ def do_create_xtweet(creator: UserProfile, xtweet_content: str) -> UserXtweet:
 
 def get_user_xtweet(id: int) -> UserXtweet:
     return UserXtweet.objects.filter(id=id).first()
+
+def do_mark_xtweet_deleted(id: int):
+    UserXtweet.objects.filter(id=id).update(is_deleted=True)

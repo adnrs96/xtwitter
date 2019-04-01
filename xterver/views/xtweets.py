@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
+from django.db import DatabaseError, transaction
 from django.shortcuts import redirect
 from django.db.transaction import TransactionManagementError
 from rest_framework.decorators import api_view
@@ -9,17 +9,38 @@ from xterver.lib.response import json_response
 from rest_framework import status
 from xterver.actions import (
     get_user_by_username, do_check_user_follows_user, do_create_connection,
-    do_remove_connection, do_create_xtweet, get_user_xtweet
+    do_remove_connection, do_create_xtweet, get_user_xtweet, do_mark_xtweet_deleted
 )
+from xterver.models import UserXtweet
 
-@api_view(['GET'])
-def handle_xtweet_read(request: Request, username: str, xtweet_id: int) -> Response:
-    # We can probably in future add support for tweet visibility over here by
-    # performing checks relating to access of xtweets for a particular user.
+@login_required(login_url='/login')
+def handle_xtweet_delete(request: Request, user_xtweet: UserXtweet) -> Response:
+    if request.user != user_xtweet.user:
+        return Response(json_response('error', 'Cannot delete xtweet from foreign profile.'),
+                        status=status.HTTP_403_FORBIDDEN)
+    try:
+        xtweet_delete_status = do_mark_xtweet_deleted(user_xtweet.id)
+    except DatabaseError:
+        return Response(json_response('error'),
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return Response(json_response('success',
+                    data={
+                    'msg': 'Xtweet Deleted.',
+                    'tweet_id': user_xtweet.id}),
+                    status=status.HTTP_200_OK)
+
+@api_view(['GET', 'DELETE'])
+def handle_xtweet_actions(request: Request, username: str, xtweet_id: int) -> Response:
     user_xtweet = get_user_xtweet(xtweet_id)
-    if user_xtweet is None:
+    if user_xtweet is None or user_xtweet.is_deleted:
         return Response(json_response('error', 'No such Xtweet found.'),
                         status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'DELETE':
+        return handle_xtweet_delete(request, user_xtweet)
+
+    # We can probably in future add support for tweet visibility over here by
+    # performing checks relating to access of xtweets for a particular user.
     if user_xtweet.user.username != username:
         return redirect('/%s/xtweets/%d' % (user_xtweet.user.username, xtweet_id))
     return Response(json_response('success',
