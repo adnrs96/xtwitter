@@ -91,3 +91,65 @@ class RegisterationTest(APITestCase):
         # Test already confirmed email.
         data = {'email': 'akshay@getpostman.com', 'key': confirmation_key}
         test_failures(data, status.HTTP_417_EXPECTATION_FAILED)
+
+    def test_final_registeration(self):
+        """
+        Test for completing registeration successfully.
+        This basically tests the /accounts endpoint.
+        """
+        url = '/accounts'
+
+        data = {'email': 'akshay@getpostman.com', 'full_name': 'Akshay Bist'}
+        response = self.client.post('/accounts/new', data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        confirmation_key = UserConfirmation.objects.all().first().confirmation_key
+        data = {'email': 'akshay@getpostman.com', 'key': confirmation_key}
+        response = self.client.post('/accounts/confirm', data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        def test_failures(data: Dict[str, str],
+                          status: int=status.HTTP_400_BAD_REQUEST) -> Response:
+            count_before = UserConfirmation.objects.all().count()
+            response = self.client.post(url, data, format='json')
+            self.assertEqual(response.status_code, status)
+            self.assertEqual(UserConfirmation.objects.all().count(), count_before)
+            return response
+
+        # Test missing password.
+        data = {'email': 'akshay@getpostman.com', 'username': 'bakshay'}
+        test_failures(data)
+
+        # Test missing username.
+        data = {'email': 'akshay@getpostman.com'}
+        test_failures(data)
+
+        # Test missing email.
+        data = {'username': 'bakshay'}
+        test_failures(data)
+
+        # Test invalid email.
+        data = {'email': 'akshay', 'username': 'bakshay', 'password': 'bakshay@123'}
+        test_failures(data)
+
+        # Test email not confirmed for final registeration.
+        data = {'email': 'aditya@getpostman.com', 'username': 'bakshay', 'password': 'bakshay@123'}
+        test_failures(data)
+
+        # Test username different then email.
+        data = {'email': 'akshay@getpostman.com', 'username': 'akshay@getpostman.com', 'password': 'bakshay@123'}
+        test_failures(data)
+
+        # Test password strength.
+        data = {'email': 'akshay@getpostman.com', 'username': 'akshay@getpostman.com', 'password': '12345'}
+        test_failures(data)
+
+        data = {'email': 'akshay@getpostman.com', 'username': 'bakshay', 'password': 'bakshay@123'}
+        res_data = {'username': 'bakshay', 'full_name': 'Akshay Bist', 'result': 'success', 'msg': 'User Created.'}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data, res_data)
+        self.assertEqual(UserProfile.objects.all().count(), 1)
+        self.assertTrue(UserProfile.objects.all().first().username, 'bakshay')
+
+        # Test email id confirmed.
+        test_failures(data)
