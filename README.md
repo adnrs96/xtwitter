@@ -13,6 +13,11 @@ You can do this with or without a venv but I am gonna try include usage of a ven
 *  `virtualenv xtwitter-venv` This will create a virtual env.
 *  `source xtwitter-venv/bin/activate`
 *  `pip install -r requirements.txt`
+* Create a secrets file at `/etc/xtwitter/xtwitter-secrets.conf`. It must have at least one setting that is a secret key. Sample secrets file content are as follows:
+```
+[secrets]
+secret_key = <some-value-here>
+```
 * Migrate the database using `python manage.py migrate`.
 
 To start a web server run `python manage.py runserver`. A web server will start up at `localhost:8000`.
