@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login, logout
 from django.db import transaction
 from django.db.models import F
 from django.db.transaction import TransactionManagementError
@@ -10,7 +11,7 @@ from xterver.lib.response import json_response
 from rest_framework import status
 from xterver.actions import (
     get_user_by_username, do_check_user_follows_user, do_create_connection,
-    do_remove_connection
+    do_remove_connection, get_user_by_email
 )
 
 @login_required(login_url='/login')

@@ -16,8 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from xterver.views.registeration import (
-    pre_registeration, final_registeration, confirm_registeration,
-    authenticate_and_login, logout_view
+    pre_registeration, final_registeration, confirm_registeration
 )
 from xterver.views.users import (
     handle_follow_user
@@ -25,6 +24,7 @@ from xterver.views.users import (
 from xterver.views.xtweets import (
     handle_xtweet_creation, handle_xtweet_actions
 )
+from xterver.views.accounts import authenticate_and_login, logout_view
 
 urlpatterns = [
     path('accounts/new', pre_registeration),

@@ -1,5 +1,5 @@
 from django.contrib.auth.password_validation import validate_password
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import login
 from django.core.mail import send_mail
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
@@ -12,7 +12,7 @@ from xterver.lib.response import json_response
 from xterver.serializers import UserProfileSerializer, UserConfirmationSerializer
 from xterver.actions import (
     do_check_email_in_confirmation, do_create_user, do_register_user_for_confirmation,
-    do_check_email_registered, get_user_confirmation, get_user_by_email
+    do_check_email_registered, get_user_confirmation
 )
 
 @api_view(['POST'])
@@ -121,23 +121,3 @@ def final_registeration(request: Request) -> Response:
                               'full_name': user.full_name}),
                         status=status.HTTP_201_CREATED)
         return Response(request.data)
-
-@api_view(['POST'])
-def authenticate_and_login(request):
-    potential_user = get_user_by_email(request.data.get('email'))
-    if potential_user is None:
-        return Response(json_response('error', 'Invalid Email or Password.'),
-                        status=status.HTTP_400_BAD_REQUEST)
-    authenticated = potential_user.check_password(request.data.get('password'))
-    if authenticated:
-        login(request, potential_user)
-        return Response(json_response('success', 'Logged In'),
-                        status=status.HTTP_200_OK)
-    return Response(json_response('error', 'Invalid Email or Password.'),
-                    status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['DELETE'])
-def logout_view(request):
-    logout(request)
-    return Response(json_response('success', 'Logged Out.'),
-                    status=status.HTTP_200_OK)
