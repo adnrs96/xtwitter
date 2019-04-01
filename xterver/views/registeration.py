@@ -136,7 +136,7 @@ def authenticate_and_login(request):
     return Response(json_response('error', 'Invalid Email or Password.'),
                     status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
+@api_view(['DELETE'])
 def logout_view(request):
     logout(request)
     return Response(json_response('success', 'Logged Out.'),
